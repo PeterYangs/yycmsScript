@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 	"yycmsScript"
 )
 
@@ -11,11 +12,7 @@ func main() {
 
 	t.StartFunc(func(app *yycmsScript.App) (string, error) {
 
-		//fmt.Println(app.Request.GetFlag("file"), "----")
-
 		err := app.StartDefaultServer(func(message string) string {
-
-			fmt.Println(message, "xxx")
 
 			switch message {
 
@@ -36,10 +33,7 @@ func main() {
 			fmt.Println(err)
 		}
 
-		for {
-
-			select {}
-		}
+		time.Sleep(100000 * time.Second)
 
 		return "", nil
 	})

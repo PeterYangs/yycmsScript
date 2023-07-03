@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 type App struct {
@@ -50,15 +51,9 @@ func (app *App) accept(unixListener *net.UnixListener, callback func(message str
 					return
 				}
 
-				//fmt.Println("收到信息：", message)
-				//
-				//u.Write([]byte("nice\n"))
+				message = strings.Replace(message, "\n", "", -1)
 
-				fmt.Println(call(message+"\n"), "kkk")
-
-				_, eee := u.Write([]byte(call(message + "\n")))
-
-				fmt.Println(eee, "uuuu")
+				u.Write([]byte(call(message) + "\n"))
 
 			}
 
@@ -115,7 +110,6 @@ func (app *App) SendDefaultServer(message string) (string, error) {
 	defer func() {
 
 		conn.Close()
-		//conn.Close()
 
 	}()
 
@@ -131,8 +125,6 @@ func (app *App) SendDefaultServer(message string) (string, error) {
 
 		return "", rErr
 	}
-
-	fmt.Println(res, "jjjj")
 
 	return res, nil
 }
