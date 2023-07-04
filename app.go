@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 type App struct {
@@ -51,11 +52,9 @@ func (app *App) accept(unixListener *net.UnixListener, callback func(message str
 					return
 				}
 
-				fmt.Println(call(message+"\n"), "kkk")
+				message = strings.Replace(message, "\n", "", -1)
 
-				_, eee := u.Write([]byte(call(message + "\n")))
-
-				fmt.Println(eee, "uuuu")
+				u.Write([]byte(call(message) + "\n"))
 
 			}
 
