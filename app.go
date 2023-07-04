@@ -2,9 +2,9 @@ package yycmsScript
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"net"
-	"os"
 	"strings"
 )
 
@@ -13,22 +13,61 @@ type App struct {
 	Request *Request
 	appName string
 	Data    *Data
+	yy      *YyCmsScript
 }
 
-func NewApp(version string, request *Request, appName string) *App {
+func NewApp(yy *YyCmsScript, version string, request *Request, appName string) *App {
 
-	return &App{version: version, Request: request, appName: appName, Data: NewData()}
+	return &App{version: version, Request: request, appName: appName, Data: NewData(), yy: yy}
 }
 
 func (app *App) accept(unixListener *net.UnixListener, callback func(message string) string) {
 
-	defer unixListener.Close()
+	defer func() {
+
+		unixListener.Close()
+
+		app.yy.wait.Done()
+
+	}()
+
+	go func(u *net.UnixListener) {
+
+		select {
+
+		case <-app.yy.cxt.Done():
+
+			u.Close()
+
+		}
+
+	}(unixListener)
 
 	for {
+
+		select {
+
+		case <-app.yy.cxt.Done():
+
+			return
+
+		default:
+
+		}
 
 		unixConn, aErr := unixListener.AcceptUnix()
 
 		if aErr != nil {
+
+			select {
+
+			case <-app.yy.cxt.Done():
+
+				return
+
+			default:
+
+			}
 
 			fmt.Println(aErr)
 
@@ -46,6 +85,16 @@ func (app *App) accept(unixListener *net.UnixListener, callback func(message str
 				message, rErr := reader.ReadString('\n')
 
 				if rErr != nil {
+
+					select {
+
+					case <-app.yy.cxt.Done():
+
+						return
+
+					default:
+
+					}
 
 					fmt.Println(rErr)
 
@@ -68,8 +117,6 @@ func (app *App) StartDefaultServer(callback func(message string) string) error {
 
 	sockPath := "storage/app/public/" + app.appName + ".sock"
 
-	os.Remove(sockPath)
-
 	unixAddr, err := net.ResolveUnixAddr("unix", sockPath)
 
 	if err != nil {
@@ -83,6 +130,8 @@ func (app *App) StartDefaultServer(callback func(message string) string) error {
 
 		return lErr
 	}
+
+	app.yy.wait.Add(1)
 
 	go app.accept(unixListener, callback)
 
@@ -128,4 +177,14 @@ func (app *App) SendDefaultServer(message string) (string, error) {
 	}
 
 	return res, nil
+}
+
+func (app *App) GetCxt() context.Context {
+
+	return app.yy.GetCxt()
+}
+
+func (app *App) Cancel() {
+
+	app.yy.cancel()
 }

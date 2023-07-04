@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"time"
@@ -9,9 +10,9 @@ import (
 
 func main() {
 
-	t := yycmsScript.NewYyCmsScript()
+	t := yycmsScript.NewYyCmsScript(context.Background())
 
-	t.StartFunc(func(app *yycmsScript.App) (string, error) {
+	s := t.StartFunc(func(app *yycmsScript.App) (string, error) {
 
 		err := app.StartDefaultServer(func(message string) string {
 
@@ -20,6 +21,12 @@ func main() {
 			case "num":
 
 				return app.Data.Get("num", "")
+
+			case "stop":
+
+				app.Cancel()
+
+				return ""
 
 			default:
 
@@ -38,20 +45,32 @@ func main() {
 
 		for {
 
-			time.Sleep(1 * time.Second)
+			select {
 
-			num++
+			case <-app.GetCxt().Done():
 
-			fmt.Println(num)
+				return "", nil
 
-			app.Data.Set("num", strconv.Itoa(num))
+			default:
+
+				time.Sleep(1 * time.Second)
+
+				num++
+
+				fmt.Println(num)
+
+				app.Data.Set("num", strconv.Itoa(num))
+
+			}
 
 		}
 
-		return "", nil
+		//return "", nil
 	})
 
 	//s.Flag("file", "文件路径").Required()
+
+	s.SmoothExit()
 
 	c := t.Command("check", "检查", func(app *yycmsScript.App) (string, error) {
 
@@ -69,5 +88,21 @@ func main() {
 
 	c.Flag("file", "文件路径")
 
-	t.Run("test", "测试用例")
+	t.Command("stop", "停止", func(app *yycmsScript.App) (string, error) {
+
+		//app.Cancel()
+
+		app.SendDefaultServer("stop")
+
+		return "", nil
+	})
+
+	err := t.Run("test", "测试用例")
+
+	if err != nil {
+
+		fmt.Println(err)
+
+	}
+
 }

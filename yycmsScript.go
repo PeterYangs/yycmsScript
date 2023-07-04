@@ -1,9 +1,14 @@
 package yycmsScript
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"github.com/alecthomas/kingpin/v2"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 )
 
 type YyCmsScript struct {
@@ -11,11 +16,21 @@ type YyCmsScript struct {
 	startFunc func(app *App) (string, error)
 	list      []*Item
 	app       *kingpin.Application
+	cxt       context.Context
+	cancel    context.CancelFunc
+	wait      sync.WaitGroup
 }
 
-func NewYyCmsScript() *YyCmsScript {
+func NewYyCmsScript(cxt context.Context) *YyCmsScript {
 
-	return &YyCmsScript{version: "0.0.1"}
+	c, cancel := context.WithCancel(cxt)
+
+	return &YyCmsScript{version: "0.0.1", cxt: c, cancel: cancel, wait: sync.WaitGroup{}}
+}
+
+func (y *YyCmsScript) GetCxt() context.Context {
+
+	return y.cxt
 }
 
 // SetVersion 设置版本号
@@ -111,12 +126,33 @@ func (y *YyCmsScript) Run(appName string, appDesc string) error {
 			return iErr
 		}
 
-		str, SErr := item.fun(NewApp(y.version, y.getRequest(cmd), appName))
+		if item.smoothExit {
+
+			sigs := make(chan os.Signal, 1)
+
+			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+			go func(s chan os.Signal) {
+
+				<-s
+
+				fmt.Println("检查到退出信号。。。")
+
+				y.cancel()
+
+			}(sigs)
+
+		}
+
+		str, SErr := item.fun(NewApp(y, y.version, y.getRequest(cmd), appName))
 
 		if SErr != nil {
 
 			return SErr
 		}
+
+		//等待退出
+		y.wait.Wait()
 
 		print(str)
 

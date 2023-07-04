@@ -1,12 +1,13 @@
 package yycmsScript
 
 type Item struct {
-	fun   func(app *App) (string, error)
-	flags []*Flag
-	args  []*Arg
-	name  string
-	help  string
-	hide  bool
+	fun        func(app *App) (string, error)
+	flags      []*Flag
+	args       []*Arg
+	name       string
+	help       string
+	hide       bool
+	smoothExit bool
 }
 
 func NewItem(name string, fun func(app *App) (string, error), help string) *Item {
@@ -38,4 +39,13 @@ func (i *Item) Hide() *Item {
 	i.hide = true
 
 	return i
+}
+
+// SmoothExit 打开平滑退出
+func (i *Item) SmoothExit() *Item {
+
+	i.smoothExit = true
+
+	return i
+
 }
