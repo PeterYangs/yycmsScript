@@ -1,4 +1,4 @@
-module yycmsScript
+module github.com/PeterYangs/yycmsScript
 
 go 1.18
 

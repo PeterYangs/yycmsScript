@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/PeterYangs/yycmsScript"
 	"strconv"
 	"time"
-	"yycmsScript"
 )
 
 func main() {
