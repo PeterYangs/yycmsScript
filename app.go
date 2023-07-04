@@ -11,11 +11,12 @@ type App struct {
 	version string
 	Request *Request
 	appName string
+	data    *Data
 }
 
 func NewApp(version string, request *Request, appName string) *App {
 
-	return &App{version: version, Request: request, appName: appName}
+	return &App{version: version, Request: request, appName: appName, data: NewData()}
 }
 
 func (app *App) accept(unixListener *net.UnixListener, callback func(message string) string) {
@@ -49,10 +50,6 @@ func (app *App) accept(unixListener *net.UnixListener, callback func(message str
 
 					return
 				}
-
-				//fmt.Println("收到信息：", message)
-				//
-				//u.Write([]byte("nice\n"))
 
 				fmt.Println(call(message+"\n"), "kkk")
 
@@ -115,7 +112,6 @@ func (app *App) SendDefaultServer(message string) (string, error) {
 	defer func() {
 
 		conn.Close()
-		//conn.Close()
 
 	}()
 
@@ -131,8 +127,6 @@ func (app *App) SendDefaultServer(message string) (string, error) {
 
 		return "", rErr
 	}
-
-	fmt.Println(res, "jjjj")
 
 	return res, nil
 }

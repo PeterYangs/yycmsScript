@@ -15,11 +15,9 @@ func main() {
 
 		err := app.StartDefaultServer(func(message string) string {
 
-			fmt.Println(message, "xxx")
-
 			switch message {
 
-			case "yes":
+			case "num":
 
 				return "yes啊"
 
@@ -48,7 +46,7 @@ func main() {
 
 	c := t.Command("check", "检查", func(app *yycmsScript.App) (string, error) {
 
-		res, err := app.SendDefaultServer("yes")
+		res, err := app.SendDefaultServer("num")
 
 		if err != nil {
 
