@@ -12,12 +12,12 @@ type App struct {
 	version string
 	Request *Request
 	appName string
-	data    *Data
+	Data    *Data
 }
 
 func NewApp(version string, request *Request, appName string) *App {
 
-	return &App{version: version, Request: request, appName: appName, data: NewData()}
+	return &App{version: version, Request: request, appName: appName, Data: NewData()}
 }
 
 func (app *App) accept(unixListener *net.UnixListener, callback func(message string) string) {

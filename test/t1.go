@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 	"yycmsScript"
 )
@@ -18,7 +19,7 @@ func main() {
 
 			case "num":
 
-				return "yes啊"
+				return app.Data.Get("num", "")
 
 			default:
 
@@ -30,10 +31,22 @@ func main() {
 
 		if err != nil {
 
-			fmt.Println(err)
+			return "", err
 		}
 
-		time.Sleep(100000 * time.Second)
+		num := 0
+
+		for {
+
+			time.Sleep(1 * time.Second)
+
+			num++
+
+			fmt.Println(num)
+
+			app.Data.Set("num", strconv.Itoa(num))
+
+		}
 
 		return "", nil
 	})
