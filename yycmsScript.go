@@ -105,7 +105,15 @@ func (y *YyCmsScript) Run(appName string, appDesc string) error {
 
 			for _, arg := range item.args {
 
-				com.Arg(arg.name, arg.help)
+				a := com.Arg(arg.name, arg.help)
+
+				if arg.required {
+
+					a.Required()
+
+				}
+
+				a.String()
 
 			}
 
