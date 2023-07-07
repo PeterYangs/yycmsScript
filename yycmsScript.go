@@ -152,12 +152,16 @@ func (y *YyCmsScript) Run(appName string, appDesc string) error {
 
 		}
 
-		str, SErr := item.fun(NewApp(y, y.version, y.getRequest(cmd), appName))
+		ap := NewApp(y, y.version, y.getRequest(cmd), appName)
+
+		str, SErr := item.fun(ap)
 
 		if SErr != nil {
 
 			return SErr
 		}
+
+		ap.Cancel()
 
 		//等待退出
 		y.wait.Wait()

@@ -43,7 +43,29 @@ func main() {
 
 		num := 0
 
-		for {
+		//for {
+		//
+		//	select {
+		//
+		//	case <-app.GetCxt().Done():
+		//
+		//		return "", nil
+		//
+		//	default:
+		//
+		//		time.Sleep(1 * time.Second)
+		//
+		//		num++
+		//
+		//		fmt.Println(num)
+		//
+		//		app.Data.Set("num", strconv.Itoa(num))
+		//
+		//	}
+		//
+		//}
+
+		for i := 0; i < 10; i++ {
 
 			select {
 
@@ -62,10 +84,9 @@ func main() {
 				app.Data.Set("num", strconv.Itoa(num))
 
 			}
-
 		}
 
-		//return "", nil
+		return "", nil
 	})
 
 	t.Command("num", "检查", func(app *yycmsScript.App) (string, error) {
