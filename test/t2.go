@@ -12,9 +12,9 @@ func main() {
 
 	t := yycmsScript.NewYyCmsScript(context.Background())
 
-	s := t.StartFunc(func(app *yycmsScript.App) (string, error) {
+	t.StartFunc(func(app *yycmsScript.App) (string, error) {
 
-		err := app.StartDefaultServer(func(message string) string {
+		err := app.StarCustomServer("t2", func(message string) string {
 
 			switch message {
 
@@ -68,15 +68,9 @@ func main() {
 		//return "", nil
 	})
 
-	//s.Flag("file", "文件路径").Required()
+	t.Command("num", "检查", func(app *yycmsScript.App) (string, error) {
 
-	//s.SmoothExit()
-
-	s.Flag("file", "")
-
-	c := t.Command("check", "检查", func(app *yycmsScript.App) (string, error) {
-
-		res, err := app.SendDefaultServer("num")
+		res, err := app.SendCustomServer("t2", "num")
 
 		if err != nil {
 
@@ -88,18 +82,14 @@ func main() {
 		return "", nil
 	})
 
-	c.Flag("file", "文件路径")
-
 	t.Command("stop", "停止", func(app *yycmsScript.App) (string, error) {
 
-		//app.Cancel()
-
-		app.SendDefaultServer("stop")
+		fmt.Println(app.SendCustomServer("t2", "stop"))
 
 		return "", nil
 	})
 
-	err := t.Run("test", "测试用例")
+	err := t.Run("test2", "测试用例")
 
 	if err != nil {
 

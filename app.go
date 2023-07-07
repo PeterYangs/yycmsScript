@@ -3,8 +3,10 @@ package yycmsScript
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 )
 
@@ -103,7 +105,18 @@ func (app *App) accept(unixListener *net.UnixListener, callback func(message str
 
 				message = strings.Replace(message, "\n", "", -1)
 
-				u.Write([]byte(call(message) + "\n"))
+				switch message {
+
+				case "__ping":
+
+					u.Write([]byte("__ping" + "\n"))
+
+					break
+
+				default:
+
+					u.Write([]byte(call(message) + "\n"))
+				}
 
 			}
 
@@ -115,7 +128,33 @@ func (app *App) accept(unixListener *net.UnixListener, callback func(message str
 
 func (app *App) StartDefaultServer(callback func(message string) string) error {
 
-	sockPath := "storage/app/public/" + app.appName + ".sock"
+	return app.StarCustomServer(app.appName, callback)
+
+}
+
+func (app *App) StarCustomServer(sockName string, callback func(message string) string) error {
+
+	sockPath := "storage/app/public/" + sockName + ".sock"
+
+	ok, _ := PathExists(sockPath)
+
+	if ok {
+
+		m, pErr := app.SendCustomServer(sockName, "__ping")
+
+		if pErr != nil {
+
+			os.Remove(sockPath)
+
+		}
+
+		if m == "__ping" {
+
+			return errors.New("sock文件已存在：" + sockPath)
+
+		}
+
+	}
 
 	unixAddr, err := net.ResolveUnixAddr("unix", sockPath)
 
@@ -141,7 +180,12 @@ func (app *App) StartDefaultServer(callback func(message string) string) error {
 
 func (app *App) SendDefaultServer(message string) (string, error) {
 
-	sockPath := "storage/app/public/" + app.appName + ".sock"
+	return app.SendCustomServer(app.appName, message)
+}
+
+func (app *App) SendCustomServer(sockName string, message string) (string, error) {
+
+	sockPath := "storage/app/public/" + sockName + ".sock"
 
 	unixAddr, err := net.ResolveUnixAddr("unix", sockPath)
 
@@ -176,7 +220,10 @@ func (app *App) SendDefaultServer(message string) (string, error) {
 		return "", rErr
 	}
 
+	res = strings.Replace(res, "\n", "", -1)
+
 	return res, nil
+
 }
 
 func (app *App) GetCxt() context.Context {
